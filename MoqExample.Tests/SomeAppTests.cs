@@ -99,12 +99,7 @@ namespace MoqExample.Tests
         }
 
         /// <summary>
-        /// Now, it is true that you can use a Moq Sequence to return a different value each time a mocked method 
-        /// is called, but as far as I can tell you can only use this where the valid value is first and throwing 
-        /// an exception is the last item in the sequence. In my case above I explicitly wanted to test that an 
-        /// exception was thrown on the first call and a valid value was returned on the second call. However, 
-        /// if all you need to test in your code is how it handles a valid value on the first call and an exception 
-        /// being thrown on the second call, you can use a Sequence for your mock setup.
+        /// As an alternative to using a Callback, you can use the Moq feature Sequence for your mock setup.
         /// </summary>
         [Test]
         public void Mock_ShouldThrowExceptionOnSecondCall_WhenSucceedsOnFirstCallUsingSequences()
@@ -113,16 +108,17 @@ namespace MoqExample.Tests
             Mock<ISomeService> _mockSomeService = new Mock<ISomeService>();
 
             _mockSomeService.SetupSequence(x => x.GetNextStuff())
-            .Returns(new SomeStuff())
-            .Throws<Exception>();
+                .Throws(new Exception("Failure"))
+                .Returns(new SomeStuff());
 
             // Act
-            var resultOne = _mockSomeService.Object.GetNextStuff();
-            var resultTwoException = Record.Exception(() => _mockSomeService.Object.GetNextStuff());
+            var resultOneException = Record.Exception(() => _mockSomeService.Object.GetNextStuff());
+            var resultTwo = _mockSomeService.Object.GetNextStuff();
+            
 
             // Assert
-            Assert.IsNotNull(resultOne);
-            Assert.IsNotNull(resultTwoException);
+            Assert.IsNotNull(resultOneException);
+            Assert.IsNotNull(resultTwo);
         }
 
         /// Scenario: Mock a void method to throw an exception
