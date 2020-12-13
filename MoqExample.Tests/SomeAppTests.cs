@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Moq;
 using NUnit.Framework;
+using Xunit;
 
 namespace MoqExample.Tests
 {
@@ -18,17 +19,24 @@ namespace MoqExample.Tests
         /// Dequeue and return the result each time the mocked method is called.
         /// </summary>
         [Test]
-        public void MogMethodThatReturnsADifferentValueWhenCalledASecondTime()
+        public void Mock_ShouldReturnDifferentValue_WhenCalledASecondTimeUsingQueue()
         {
+            // Arrange
             Mock<ISomeService> _mockSomeService = new Mock<ISomeService>();
+
             var queueStuff = new Queue<SomeStuff>();
             queueStuff.Enqueue(new SomeStuff { Id = 1, Name = "Real" });
             queueStuff.Enqueue(null);
 
             _mockSomeService.Setup(x => x.GetNextStuff()).Returns(queueStuff.Dequeue);
 
-            Assert.IsNotNull(_mockSomeService.Object.GetNextStuff());
-            Assert.IsNull(_mockSomeService.Object.GetNextStuff());
+            // Act
+            var resultOne = _mockSomeService.Object.GetNextStuff();
+            var resultTwo = _mockSomeService.Object.GetNextStuff();
+
+            // Assert
+            Assert.IsNotNull(resultOne);
+            Assert.IsNull(resultTwo);
         }
 
         /// <summary>
@@ -37,16 +45,22 @@ namespace MoqExample.Tests
         /// each time the mocked method is called.
         /// </summary>
         [Test]
-        public void MogMethodThatReturnsADifferentValueWhenCalledASecondTimeUsingSequences()
+        public void Mock_ShouldReturnsDifferentValue_WhenCalledASecondTimeUsingSequences()
         {
+            // Arrange
             Mock<ISomeService> _mockSomeService = new Mock<ISomeService>();
 
             _mockSomeService.SetupSequence(x => x.GetNextStuff())
                     .Returns(new SomeStuff { Id = 1, Name = "Real" })
-                    .Returns(null);
+                    .Returns((SomeStuff)null);
 
-            Assert.IsNotNull(_mockSomeService.Object.GetNextStuff());
-            Assert.IsNull(_mockSomeService.Object.GetNextStuff());
+            // Act
+            var resultOne = _mockSomeService.Object.GetNextStuff();
+            var resultTwo = _mockSomeService.Object.GetNextStuff();
+
+            // Assert
+            Assert.IsNotNull(resultOne);
+            Assert.IsNull(resultTwo);
         }
 
         /// Scenario: Throw an exception the first time a mocked method is called, but succeed on the second try.
@@ -60,8 +74,9 @@ namespace MoqExample.Tests
         /// request successfully and continue. You can accomplish this by using a feature in Moq called “Callback”.
         /// </summary>
         [Test]
-        public void MogMethodThatThrowsAnExceptionFirstTimeCalledAndAnObjectWithSecondTime()
+        public void Mock_ShouldSucceedOnSecondCall_WhenThrowsExceptionOnFirstCall()
         {
+            // Arrange
             Mock<ISomeService> _mockSomeService = new Mock<ISomeService>();
             var calls = 0;
 
@@ -74,8 +89,13 @@ namespace MoqExample.Tests
                         throw new Exception("Failure");
                 });
 
-            Assert.Throws<Exception>(() => _mockSomeService.Object.GetNextStuff());
-            Assert.IsNotNull(_mockSomeService.Object.GetNextStuff());
+            // Act
+            var resultOneException = Record.Exception(() => _mockSomeService.Object.GetNextStuff());
+            var resultTwo = _mockSomeService.Object.GetNextStuff();
+
+            // Assert
+            Assert.IsNotNull(resultOneException);
+            Assert.IsNotNull(resultTwo);
         }
 
         /// <summary>
@@ -87,16 +107,22 @@ namespace MoqExample.Tests
         /// being thrown on the second call, you can use a Sequence for your mock setup.
         /// </summary>
         [Test]
-        public void MockMethodThatReturnsAnObjectFirstTimeCalledAndThrowsAnExceptionSecondTimeUsingSequences()
+        public void Mock_ShouldThrowExceptionOnSecondCall_WhenSucceedsOnFirstCallUsingSequences()
         {
+            // Arrange
             Mock<ISomeService> _mockSomeService = new Mock<ISomeService>();
 
             _mockSomeService.SetupSequence(x => x.GetNextStuff())
             .Returns(new SomeStuff())
             .Throws<Exception>();
 
-            Assert.IsNotNull(_mockSomeService.Object.GetNextStuff());
-            Assert.Throws<Exception>(() => _mockSomeService.Object.GetNextStuff());
+            // Act
+            var resultOne = _mockSomeService.Object.GetNextStuff();
+            var resultTwoException = Record.Exception(() => _mockSomeService.Object.GetNextStuff());
+
+            // Assert
+            Assert.IsNotNull(resultOne);
+            Assert.IsNotNull(resultTwoException);
         }
 
         /// Scenario: Mock a void method to throw an exception
@@ -108,13 +134,18 @@ namespace MoqExample.Tests
         /// mock this method.
         /// </summary>
         [Test]
-        public void MogMethodThatThrowsAnExceptionIsVoidAssertExceptionIsThrown()
+        public void Mock_ShouldThrowException_WhenMockedVoidMethodIsCalled()
         {
+            // Arrange
             Mock<ISomeService> _mockSomeService = new Mock<ISomeService>();
 
             _mockSomeService.Setup(x => x.DoStuff()).Throws(new Exception("Failure"));
 
-            Assert.Throws<Exception>(() => _mockSomeService.Object.DoStuff());
+            // Act
+            var resultException = Record.Exception(() => _mockSomeService.Object.DoStuff());
+
+            // Assert
+            Assert.IsNotNull(resultException);
         }
     }
 }
