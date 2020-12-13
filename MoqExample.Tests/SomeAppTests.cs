@@ -135,7 +135,8 @@ namespace MoqExample.Tests
             // Arrange
             Mock<ISomeService> _mockSomeService = new Mock<ISomeService>();
 
-            _mockSomeService.Setup(x => x.DoStuff()).Throws(new Exception("Failure"));
+            _mockSomeService.Setup(x => x.DoStuff())
+                .Throws(new Exception("Failure"));
 
             // Act
             var resultException = Record.Exception(() => _mockSomeService.Object.DoStuff());
