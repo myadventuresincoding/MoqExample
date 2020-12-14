@@ -35,7 +35,7 @@ namespace MoqExample.Tests
             var resultTwo = _mockSomeService.Object.GetNextStuff();
 
             // Assert
-            Assert.IsNotNull(resultOne);
+            Assert.AreEqual("Real", resultOne.Name);
             Assert.IsNull(resultTwo);
         }
 
@@ -59,7 +59,7 @@ namespace MoqExample.Tests
             var resultTwo = _mockSomeService.Object.GetNextStuff();
 
             // Assert
-            Assert.IsNotNull(resultOne);
+            Assert.AreEqual("Real", resultOne.Name);
             Assert.IsNull(resultTwo);
         }
 
@@ -81,7 +81,7 @@ namespace MoqExample.Tests
             var calls = 0;
 
             _mockSomeService.Setup(x => x.GetNextStuff())
-                .Returns(() => new SomeStuff())
+                .Returns(() => new SomeStuff { Id = 1, Name = "Real" })
                 .Callback(() =>
                 {
                     calls++;
@@ -94,8 +94,8 @@ namespace MoqExample.Tests
             var resultTwo = _mockSomeService.Object.GetNextStuff();
 
             // Assert
-            Assert.IsNotNull(resultOneException);
-            Assert.IsNotNull(resultTwo);
+            Assert.AreEqual("Failure", resultOneException.Message);
+            Assert.AreEqual("Real", resultTwo.Name);
         }
 
         /// <summary>
@@ -109,7 +109,7 @@ namespace MoqExample.Tests
 
             _mockSomeService.SetupSequence(x => x.GetNextStuff())
                 .Throws(new Exception("Failure"))
-                .Returns(new SomeStuff());
+                .Returns(new SomeStuff { Id = 1, Name = "Real" });
 
             // Act
             var resultOneException = Record.Exception(() => _mockSomeService.Object.GetNextStuff());
@@ -117,8 +117,8 @@ namespace MoqExample.Tests
             
 
             // Assert
-            Assert.IsNotNull(resultOneException);
-            Assert.IsNotNull(resultTwo);
+            Assert.AreEqual("Failure", resultOneException.Message);
+            Assert.AreEqual("Real", resultTwo.Name);
         }
 
         /// Scenario: Mock a void method to throw an exception
@@ -142,7 +142,7 @@ namespace MoqExample.Tests
             var resultException = Record.Exception(() => _mockSomeService.Object.DoStuff());
 
             // Assert
-            Assert.IsNotNull(resultException);
+            Assert.AreEqual("Failure", resultException.Message);
         }
     }
 }
